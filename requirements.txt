@@ -8,3 +8,4 @@ Flask
 gunicorn
 urllib3
 uvicorn
+asgiref
