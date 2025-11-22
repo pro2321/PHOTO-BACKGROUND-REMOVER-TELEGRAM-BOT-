@@ -9,5 +9,5 @@ COPY . .
 
 EXPOSE 10000
 
-# নিচের লাইনটি খুব গুরুত্বপূর্ণ। এখানে uvicorn worker ব্যবহার করা হয়েছে।
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:10000", "main:server"]
+# এখানে লক্ষ্য করুন: "main:server" এর বদলে "main:asgi_app" দেওয়া হয়েছে
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:10000", "main:asgi_app"]
