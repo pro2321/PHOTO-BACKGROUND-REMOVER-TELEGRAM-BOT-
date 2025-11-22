@@ -9,7 +9,9 @@ import telegram
 import urllib.request
 from flask import Flask, request
 
-# টেলিগ্রাম লাইব্রেরি ইম্পোর্ট
+# asgiref ইম্পোর্ট করুন (নতুন)
+from asgiref.wsgi import WsgiToAsgi
+
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -19,15 +21,18 @@ from telegram.ext import (
     filters
 )
 
+# --- Flask অ্যাপ তৈরি ---
 server = Flask(__name__)
+
+# --- কনভার্টার দিয়ে Flask কে ASGI অ্যাপে রূপান্তর করুন (নতুন লাইন) ---
+# এই 'asgi_app' কে আমরা Dockerfile এ ব্যবহার করব
+asgi_app = WsgiToAsgi(server)
 
 def setup_bot():
     """
-    Sets up the bot application and adds all handlers.
+    Sets up the bot application.
     """
-    # পারসিসটেন্স সেটআপ (যদি আপনার bot_persistence ফাইল থাকে)
     persistence = PicklePersistence(filepath='bot_persistence')
-
     application = (Application.builder()
         .token(config.BOT_TOKEN)
         .persistence(persistence)
@@ -49,7 +54,7 @@ def setup_bot():
     application.add_handler(CommandHandler("sendmsg", handlers_admin.send_message_to_user))
     application.add_handler(CommandHandler("sendmsgall", handlers_admin.send_message_all))
 
-    # --- Ignore Group/Channel Messages ---
+    # --- Ignore Group Messages ---
     application.add_handler(MessageHandler(
         filters.ChatType.GROUP | filters.ChatType.SUPERGROUP | filters.ChatType.CHANNEL,
         handlers_user.ignore_non_private_chats
@@ -57,34 +62,27 @@ def setup_bot():
 
     return application
 
-# গ্লোবাল অ্যাপ্লিকেশন অবজেক্ট তৈরি
+# বট অ্যাপ সেটআপ
 application = setup_bot()
 
 @server.route('/' + config.BOT_TOKEN, methods=['POST'])
 async def webhook_update():
     """
-    Handles updates from Telegram properly with async/await.
+    Async Webhook Handler
     """
-    # অ্যাপ্লিকেশন যদি ইনিশিলাইজ না থাকে, তবে করে নিতে হবে
     if not application._initialized:
         await application.initialize()
 
     update_json = request.get_json()
     
     if update_json:
-        # JSON থেকে আপডেট অবজেক্ট তৈরি
         update = telegram.Update.de_json(update_json, application.bot)
-        
-        # সরাসরি await ব্যবহার করে প্রসেস করা (asyncio.run ব্যবহার করবেন না)
         await application.process_update(update)
             
     return "ok", 200
 
 @server.route("/")
 def set_webhook():
-    """
-    Sets the webhook URL. Can be triggered manually or by a cron job.
-    """
     host_url = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
     if not host_url:
         return "Webhook setup failed: Host URL not found.", 500
@@ -102,10 +100,10 @@ def set_webhook():
 if __name__ == "__main__":
     # লোকাল টেস্ট এর জন্য
     import uvicorn
-    
     if not all([config.BOT_TOKEN, config.ADMIN_IDS, config.DB_C_ID]):
-        print("WARNING: Some environment variables might be missing.")
+        print("WARNING: Check env vars.")
     
     print("Starting server locally with Uvicorn...")
     port = int(os.environ.get("PORT", 10000))
-    uvicorn.run(server, host="0.0.0.0", port=port)
+    # লোকালি asgi_app রান করা হবে
+    uvicorn.run(asgi_app, host="0.0.0.0", port=port)
