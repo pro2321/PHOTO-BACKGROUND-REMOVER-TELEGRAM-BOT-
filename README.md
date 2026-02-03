@@ -1,15 +1,14 @@
-# 🖼️ AI Background Remover - Telegram Web App
+# 🖼️ AI Image Background Remover - Telegram Bot
 
-A powerful and lightweight **Telegram Web App** (TWA) that allows users to remove image backgrounds instantly. This app is designed to be integrated seamlessly with bots on the **Bots.Business** platform.
+A powerful and lightweight **Telegram Bot** that allows users to remove image backgrounds instantly. This bot is designed to be integrated seamlessly with host on the **Render** platform.
 
 ---
 
 ## 🚀 Features
-* ✨ **Instant Removal:** High-quality background removal using AI.
-* 📱 **Native Experience:** Opens directly inside Telegram with a smooth interface.
-* 📤 **Easy Upload:** Support for drag-and-drop or file selection.
-* 📥 **One-Tap Download:** Save your processed PNG images directly to your device.
-* ⚡ **Integrated with Bots.Business:** Built-in logic to communicate with your Telegram bot.
+* ✨ **Instant Removal:** High-quality background removal using **remove.bg** API key.
+* 📤 **Easy to use:** Just upload an image and get your image.
+* 📂 **Multiple formats:** Convert images directly into your chat(Jpeg/png/pdf/zip).
+* 
 
 ---
 
